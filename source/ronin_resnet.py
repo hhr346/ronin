@@ -134,11 +134,11 @@ def train(args, **kwargs):
 
     criterion = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(network.parameters(), args.lr)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, patience=10, verbose=True, eps=1e-12)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, patience=10, eps=1e-12)
 
     start_epoch = 0
     if args.continue_from is not None and osp.exists(args.continue_from):
-        checkpoints = torch.load(args.continue_from)
+        checkpoints = torch.load(args.continue_from, weights_only=False)
         start_epoch = checkpoints.get('epoch', 0)
         network.load_state_dict(checkpoints.get('model_state_dict'))
         optimizer.load_state_dict(checkpoints.get('optimizer_state_dict'))
@@ -250,7 +250,7 @@ def recon_traj_with_preds(dataset, preds, seq_id=0, **kwargs):
     Reconstruct trajectory with predicted global velocities.
     """
     ts = dataset.ts[seq_id]
-    ind = np.array([i[1] for i in dataset.index_map if i[0] == seq_id], dtype=np.int)
+    ind = np.array([i[1] for i in dataset.index_map if i[0] == seq_id], dtype=int)
     dts = np.mean(ts[ind[1:]] - ts[ind[:-1]])
     pos = np.zeros([preds.shape[0] + 2, 2])
     pos[0] = dataset.gt_pos[seq_id][0, :2]
@@ -279,10 +279,10 @@ def test_sequence(args):
 
     if not torch.cuda.is_available() or args.cpu:
         device = torch.device('cpu')
-        checkpoint = torch.load(args.model_path, map_location=lambda storage, location: storage)
+        checkpoint = torch.load(args.model_path, map_location=lambda storage, location: storage, weights_only=False)
     else:
         device = torch.device('cuda:0')
-        checkpoint = torch.load(args.model_path)
+        checkpoint = torch.load(args.model_path, weights_only=False)
 
     # Load the first sequence to update the input and output size
     _ = get_dataset(root_dir, [test_data_list[0]], args)
@@ -304,7 +304,7 @@ def test_sequence(args):
     for data in test_data_list:
         seq_dataset = get_dataset(root_dir, [data], args, mode='test')
         seq_loader = DataLoader(seq_dataset, batch_size=1024, shuffle=False)
-        ind = np.array([i[1] for i in seq_dataset.index_map if i[0] == 0], dtype=np.int)
+        ind = np.array([i[1] for i in seq_dataset.index_map if i[0] == 0], dtype=int)
 
         targets, preds = run_test(network, seq_loader, device, True)
         losses = np.mean((targets - preds) ** 2, axis=0)

@@ -8,7 +8,7 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 import quaternion
-from scipy.ndimage.filters import gaussian_filter1d
+from scipy.ndimage import gaussian_filter1d
 from torch.utils.data import Dataset
 
 sys.path.append(osp.join(osp.dirname(osp.abspath(__file__)), '..'))

@@ -235,7 +235,7 @@ def train(args, **kwargs):
 
     network = get_model(args, **kwargs).to(_device)
     optimizer = torch.optim.Adam(network.parameters(), args.lr)
-    scheduler = ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.6, verbose=True, eps=1e-12)
+    scheduler = ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.6, eps=1e-12)
     quiet_mode = kwargs.get('quiet', False)
     use_scheduler = kwargs.get('use_scheduler', False)
 
@@ -250,7 +250,7 @@ def train(args, **kwargs):
 
     start_epoch = 0
     if args.continue_from is not None and osp.exists(args.continue_from):
-        checkpoints = torch.load(args.continue_from)
+        checkpoints = torch.load(args.continue_from, weights_only=False)
         start_epoch = checkpoints.get('epoch', 0)
         network.load_state_dict(checkpoints.get('model_state_dict'))
         optimizer.load_state_dict(checkpoints.get('optimizer_state_dict'))
@@ -380,9 +380,9 @@ def test(args, **kwargs):
 
     _device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
     if _device.type == 'cpu':
-        checkpoint = torch.load(args.model_path, map_location=lambda storage, location: storage)
+        checkpoint = torch.load(args.model_path, map_location=lambda storage, location: storage, weights_only=False)
     else:
-        checkpoint = torch.load(args.model_path, map_location={model_data['device']: args.device})
+        checkpoint = torch.load(args.model_path, map_location={model_data['device']: args.device}, weights_only=False)
 
     seq_dataset = get_dataset(root_dir, test_data_list, args, mode='test', **kwargs)
 

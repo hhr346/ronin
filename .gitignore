@@ -170,3 +170,23 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
+
+# ============================================================
+# RoNIN: downloaded large data & pre-trained models (not part of the repo)
+# ============================================================
+Data/
+Pretrained_Models/
+
+# Dataset archives
+*.rar
+*.zip
+
+# Model checkpoints / experiment outputs
+checkpoints/
+logs/
+out/
+*.pt
+*.pth
+*.h5
+*.hdf5
+*.npy
